@@ -98,7 +98,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const { artist, title } = this._parseTrack(rawTrack);
     const requestId = ++this._requestId;
 
-    this._setStatus("Szukam okładki…");
+    this._setStatus("TEST V2 — SZUKAM OKŁADKI…");
 
     if (!rawTrack || !title) {
       this._applyResult({
@@ -231,12 +231,12 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const status =
       this._status ||
       (data.error
-        ? `Błąd wyszukiwania: ${this._escape(data.error)}`
+        ? `TEST V2 — BŁĄD: ${this._escape(data.error)}`
         : artwork
-          ? "Okładka znaleziona"
+          ? "TEST V2 — OKŁADKA ZNALEZIONA"
           : data.rawTrack
-            ? "Brak znalezionej okładki"
-            : "Czekam na utwór…");
+            ? "TEST V2 — BRAK OKŁADKI"
+            : "TEST V2 — CZEKAM NA UTWÓR…");
 
     this.shadowRoot.innerHTML = `
       <style>
