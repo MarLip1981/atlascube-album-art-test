@@ -98,7 +98,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const { artist, title } = this._parseTrack(rawTrack);
     const requestId = ++this._requestId;
 
-    this._setStatus("TEST V8 — SZUKAM OKŁADKI…");
+    this._setStatus("TEST V9 — SZUKAM OKŁADKI…");
 
     if (!rawTrack || !title) {
       this._applyResult({
@@ -215,6 +215,8 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const artist = data.artist || "";
     const title = data.title || "Brak informacji o utworze";
     const album = data.album || "";
+    const playback = this._hass?.states?.["sensor.atlascube_9140_playback"]?.state || "";
+    const playing = playback === "playing";
 
     const background = artwork
       ? `
@@ -227,17 +229,17 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
 
     const image = artwork
       ? `<img class="cover" src="${artwork}" alt="Okładka">`
-      : `<div class="no-cover">♪</div>`;
+      : `<div class="no-cover"><ha-icon class="fallback-radio ${playing ? "rainbow" : "idle"}" icon="mdi:radio"></ha-icon></div>`;
 
     const status =
       this._status ||
       (data.error
-        ? `TEST V8 — BŁĄD: ${this._escape(data.error)}`
+        ? `TEST V9 — BŁĄD: ${this._escape(data.error)}`
         : artwork
-          ? "TEST V8 — OKŁADKA ZNALEZIONA"
+          ? "TEST V9 — OKŁADKA ZNALEZIONA"
           : data.rawTrack
-            ? "TEST V8 — BRAK OKŁADKI"
-            : "TEST V8 — CZEKAM NA UTWÓR…");
+            ? "TEST V9 — BRAK OKŁADKI"
+            : "TEST V9 — CZEKAM NA UTWÓR…");
 
     this.shadowRoot.innerHTML = `
       <style>
@@ -330,8 +332,30 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 72px;
           color: rgba(255,255,255,.35);
+        }
+
+        .fallback-radio {
+          --mdc-icon-size: 92px;
+          width: 92px;
+          height: 92px;
+        }
+
+        .fallback-radio.idle {
+          color: rgba(255,255,255,.55);
+        }
+
+        .fallback-radio.rainbow {
+          color: #ff0000;
+          animation: atlas-rainbow 4s linear infinite;
+        }
+
+        @keyframes atlas-rainbow {
+          0% { filter: hue-rotate(0deg) drop-shadow(0 0 4px rgba(255,0,0,.8)); }
+          25% { filter: hue-rotate(90deg) drop-shadow(0 0 7px rgba(0,255,0,.8)); }
+          50% { filter: hue-rotate(180deg) drop-shadow(0 0 8px rgba(0,220,255,.85)); }
+          75% { filter: hue-rotate(270deg) drop-shadow(0 0 8px rgba(180,0,255,.85)); }
+          100% { filter: hue-rotate(360deg) drop-shadow(0 0 4px rgba(255,0,0,.8)); }
         }
 
         .artist {
