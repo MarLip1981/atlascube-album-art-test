@@ -98,7 +98,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const { artist, title } = this._parseTrack(rawTrack);
     const requestId = ++this._requestId;
 
-    this._setStatus("TEST V2 — SZUKAM OKŁADKI…");
+    this._setStatus("TEST V3 — SZUKAM OKŁADKI…");
 
     if (!rawTrack || !title) {
       this._applyResult({
@@ -231,9 +231,9 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const status =
       this._status ||
       (data.error
-        ? `TEST V2 — BŁĄD: ${this._escape(data.error)}`
+        ? `TEST V3 — BŁĄD: ${this._escape(data.error)}`
         : artwork
-          ? "TEST V2 — OKŁADKA ZNALEZIONA"
+          ? "TEST V3 — OKŁADKA ZNALEZIONA"
           : data.rawTrack
             ? "TEST V2 — BRAK OKŁADKI"
             : "TEST V2 — CZEKAM NA UTWÓR…");
@@ -267,17 +267,17 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
         .blur-bg {
           background-position: center;
           background-size: cover;
-          filter: blur(28px);
+          filter: blur(36px);
           transform: scale(1.15);
-          opacity: .48;
+          opacity: .68;
         }
 
         .shade {
           background:
             linear-gradient(
               180deg,
-              rgba(0,0,0,.30),
-              rgba(0,0,0,.72)
+              rgba(0,0,0,.18),
+              rgba(0,0,0,.58)
             );
         }
 
