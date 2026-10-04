@@ -187,6 +187,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
   }
 
   _applyResult(data) {
+    this._status = "";
     this._data = data;
     this._render();
   }
@@ -293,6 +294,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
         .content {
           position: relative;
           z-index: 1;
+          min-height: 394px;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -339,9 +341,10 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
         }
 
         .status {
-          margin-top: 16px;
-          font-size: 12px;
-          opacity: .62;
+          margin-top: auto;
+          padding-top: 14px;
+          font-size: 11px;
+          opacity: .55;
           text-align: center;
         }
 
