@@ -98,7 +98,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const { artist, title } = this._parseTrack(rawTrack);
     const requestId = ++this._requestId;
 
-    this._setStatus("TEST V5 — SZUKAM OKŁADKI…");
+    this._setStatus("TEST V6 — SZUKAM OKŁADKI…");
 
     if (!rawTrack || !title) {
       this._applyResult({
@@ -217,7 +217,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
 
     const background = artwork
       ? `
-        <div class="blur-bg" style="background-image:url("${artwork}")"></div>
+        <img class="blur-bg-image" src="${artwork}" alt="" aria-hidden="true">
         <div class="shade"></div>
       `
       : `
@@ -231,12 +231,12 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const status =
       this._status ||
       (data.error
-        ? `TEST V5 — BŁĄD: ${this._escape(data.error)}`
+        ? `TEST V6 — BŁĄD: ${this._escape(data.error)}`
         : artwork
-          ? "TEST V5 — OKŁADKA ZNALEZIONA"
+          ? "TEST V6 — OKŁADKA ZNALEZIONA"
           : data.rawTrack
-            ? "TEST V5 — BRAK OKŁADKI"
-            : "TEST V5 — CZEKAM NA UTWÓR…");
+            ? "TEST V6 — BRAK OKŁADKI"
+            : "TEST V6 — CZEKAM NA UTWÓR…");
 
     this.shadowRoot.innerHTML = `
       <style>
@@ -257,22 +257,27 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
           box-sizing: border-box;
         }
 
-        .blur-bg,
+        .blur-bg-image,
         .shade,
         .fallback-bg {
           position: absolute;
           inset: 0;
+          width: 100%;
+          height: 100%;
         }
 
-        .blur-bg {
-          background-position: center;
-          background-size: cover;
-          filter: blur(42px);\n          z-index: 0;
+        .blur-bg-image {
+          display: block;
+          object-fit: cover;
+          object-position: center;
+          filter: blur(42px);
           transform: scale(1.15);
           opacity: .82;
+          z-index: 0;
         }
 
         .shade {
+          z-index: 1;
           background:
             linear-gradient(
               180deg,
@@ -282,6 +287,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
         }
 
         .fallback-bg {
+          z-index: 0;
           background:
             radial-gradient(
               circle at 50% 42%,
