@@ -98,7 +98,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const { artist, title } = this._parseTrack(rawTrack);
     const requestId = ++this._requestId;
 
-    this._setStatus("TEST V4 — SZUKAM OKŁADKI…");
+    this._setStatus("TEST V5 — SZUKAM OKŁADKI…");
 
     if (!rawTrack || !title) {
       this._applyResult({
@@ -231,12 +231,12 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const status =
       this._status ||
       (data.error
-        ? `TEST V4 — BŁĄD: ${this._escape(data.error)}`
+        ? `TEST V5 — BŁĄD: ${this._escape(data.error)}`
         : artwork
-          ? "TEST V4 — OKŁADKA ZNALEZIONA"
+          ? "TEST V5 — OKŁADKA ZNALEZIONA"
           : data.rawTrack
-            ? "TEST V4 — BRAK OKŁADKI"
-            : "TEST V4 — CZEKAM NA UTWÓR…");
+            ? "TEST V5 — BRAK OKŁADKI"
+            : "TEST V5 — CZEKAM NA UTWÓR…");
 
     this.shadowRoot.innerHTML = `
       <style>
@@ -251,7 +251,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
           min-height: 430px;
           border-radius: 20px;
           border: 1px solid rgba(255,255,255,.10);
-          background: rgba(16,19,24,.38);
+          background: transparent;
           box-shadow: 0 4px 18px rgba(0,0,0,.25);
           padding: 18px;
           box-sizing: border-box;
@@ -267,7 +267,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
         .blur-bg {
           background-position: center;
           background-size: cover;
-          filter: blur(42px);
+          filter: blur(42px);\n          z-index: 0;
           transform: scale(1.15);
           opacity: .82;
         }
