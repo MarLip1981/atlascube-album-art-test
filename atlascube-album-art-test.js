@@ -98,7 +98,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const { artist, title } = this._parseTrack(rawTrack);
     const requestId = ++this._requestId;
 
-    this._setStatus("TEST V7 — SZUKAM OKŁADKI…");
+    this._setStatus("TEST V8 — SZUKAM OKŁADKI…");
 
     if (!rawTrack || !title) {
       this._applyResult({
@@ -211,6 +211,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
 
     const data = this._data || {};
     const artwork = data.artwork || "";
+    const station = this._hass?.states?.["sensor.atlascube_radio_stacja_radiowa"]?.state || "";
     const artist = data.artist || "";
     const title = data.title || "Brak informacji o utworze";
     const album = data.album || "";
@@ -231,12 +232,12 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const status =
       this._status ||
       (data.error
-        ? `TEST V7 — BŁĄD: ${this._escape(data.error)}`
+        ? `TEST V8 — BŁĄD: ${this._escape(data.error)}`
         : artwork
-          ? "TEST V7 — OKŁADKA ZNALEZIONA"
+          ? "TEST V8 — OKŁADKA ZNALEZIONA"
           : data.rawTrack
-            ? "TEST V7 — BRAK OKŁADKI"
-            : "TEST V7 — CZEKAM NA UTWÓR…");
+            ? "TEST V8 — BRAK OKŁADKI"
+            : "TEST V8 — CZEKAM NA UTWÓR…");
 
     this.shadowRoot.innerHTML = `
       <style>
@@ -271,7 +272,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
           object-fit: cover;
           object-position: center;
           filter: blur(24px);
-          transform: scale(1.05);
+          transform: scale(1.0);
           opacity: .82;
           z-index: 0;
         }
@@ -304,6 +305,15 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
           display: flex;
           flex-direction: column;
           align-items: center;
+        }
+
+        .station {
+          margin-bottom: 12px;
+          font-size: 14px;
+          font-weight: 600;
+          letter-spacing: .04em;
+          opacity: .82;
+          text-align: center;
         }
 
         .cover,
@@ -366,6 +376,9 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
         ${background}
 
         <div class="content">
+          ${station && station !== "unknown" && station !== "unavailable"
+            ? `<div class="station">${this._escape(station)}</div>`
+            : ""}
           ${image}
           <div class="artist">${this._escape(artist || "Nieznany wykonawca")}</div>
           <div class="title">${this._escape(title)}</div>
