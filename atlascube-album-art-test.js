@@ -235,8 +235,8 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
         : artwork
           ? "TEST V3 — OKŁADKA ZNALEZIONA"
           : data.rawTrack
-            ? "TEST V2 — BRAK OKŁADKI"
-            : "TEST V2 — CZEKAM NA UTWÓR…");
+            ? "TEST V3 — BRAK OKŁADKI"
+            : "TEST V3 — CZEKAM NA UTWÓR…");
 
     this.shadowRoot.innerHTML = `
       <style>
@@ -251,7 +251,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
           min-height: 430px;
           border-radius: 20px;
           border: 1px solid rgba(255,255,255,.10);
-          background: #101318;
+          background: rgba(16,19,24,.38);
           box-shadow: 0 4px 18px rgba(0,0,0,.25);
           padding: 18px;
           box-sizing: border-box;
@@ -267,9 +267,9 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
         .blur-bg {
           background-position: center;
           background-size: cover;
-          filter: blur(36px);
+          filter: blur(42px);
           transform: scale(1.15);
-          opacity: .68;
+          opacity: .82;
         }
 
         .shade {
