@@ -12,7 +12,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
 
     this._config = {
       entity: config.entity,
-      show_debug: config.show_debug === true
+      show_source: config.show_source !== false
     };
 
     this._cache = new Map();
@@ -93,7 +93,6 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const { artist, title } = this._parseTrack(rawTrack);
     const requestId = ++this._requestId;
 
-    this._setStatus("TEST V10 — SZUKAM OKŁADKI…");
 
     if (!rawTrack || !title) {
       this._applyResult({ rawTrack, artist, title, artwork: null, album: "" });
@@ -216,6 +215,10 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const volumeState = this._hass?.states?.["number.salon_atlascube_radio_glosnosc"]?.state;
     const volume = Number(volumeState);
     const volumeValue = Number.isFinite(volume) ? Math.max(0, Math.min(100, volume)) : 0;
+    const sourceEntity = "select.atlascube_9140_source";
+    const sourceState = this._hass?.states?.[sourceEntity];
+    const sourceValue = sourceState?.state || "";
+    const sourceOptions = Array.isArray(sourceState?.attributes?.options) ? sourceState.attributes.options : [];
 
     const background = artwork
       ? `
@@ -227,16 +230,6 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const image = artwork
       ? `<img class="cover" src="${artwork}" alt="Okładka">`
       : `<div class="no-cover"><ha-icon class="fallback-radio ${playing ? "rainbow" : "idle"}" icon="mdi:radio"></ha-icon></div>`;
-
-    const status =
-      this._status ||
-      (data.error
-        ? `TEST V10 — BŁĄD: ${this._escape(data.error)}`
-        : artwork
-          ? "TEST V10 — OKŁADKA ZNALEZIONA"
-          : data.rawTrack
-            ? "TEST V10 — BRAK OKŁADKI"
-            : "TEST V10 — CZEKAM NA UTWÓR…");
 
     this.shadowRoot.innerHTML = `
       <style>
@@ -294,6 +287,10 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
           flex-direction: column;
           align-items: center;
         }
+
+        .brand { display:flex; align-items:center; justify-content:center; gap:7px; margin-bottom:5px; font-size:17px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; opacity:.9; }
+        .brand-icon { font-size:20px; line-height:1; }
+        .brand-cube { opacity:.58; }
 
         .station {
           margin-bottom: 12px;
@@ -449,26 +446,16 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
           opacity: .65;
         }
 
-        .status {
-          margin-top: auto;
-          padding-top: 14px;
-          font-size: 11px;
-          opacity: .55;
-          text-align: center;
-        }
-
-        .debug {
-          margin-top: 10px;
-          font-size: 11px;
-          opacity: .5;
-          text-align: center;
-        }
+        .source { width:min(360px,90%); margin-top:12px; display:flex; align-items:center; gap:10px; }
+        .source ha-icon { --mdc-icon-size:22px; opacity:.75; }
+        .source select { flex:1; min-width:0; height:36px; padding:0 10px; border:1px solid rgba(255,255,255,.12); border-radius:10px; background:rgba(0,0,0,.18); color:inherit; font:inherit; outline:none; }
       </style>
 
       <div class="card">
         ${background}
 
         <div class="content">
+          <div class="brand"><span class="brand-icon">◈</span><span>ATLAS <span class="brand-cube">CUBE</span></span></div>
           ${station && station !== "unknown" && station !== "unavailable"
             ? `<div class="station">${this._escape(station)}</div>`
             : ""}
@@ -497,11 +484,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
             <div class="volume-value">${Math.round(volumeValue)}%</div>
           </div>
 
-          <div class="status">${status}</div>
-
-          ${this._config.show_debug
-            ? `<div class="debug">Źródło: iTunes Search API</div>`
-            : ""}
+          ${this._config.show_source && sourceOptions.length ? `<div class="source"><ha-icon icon="mdi:radio-tower"></ha-icon><select id="source" aria-label="Źródło">${sourceOptions.map(option => `<option value="${this._escape(option)}" ${option === sourceValue ? "selected" : ""}>${this._escape(option)}</option>`).join("")}</select></div>` : ""}
         </div>
       </div>
     `;
@@ -533,6 +516,14 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
       await this._hass.callService("number", "set_value", {
         entity_id: "number.salon_atlascube_radio_glosnosc",
         value: Number(event.target.value)
+      });
+    });
+
+    this.shadowRoot.querySelector("#source")?.addEventListener("change", async event => {
+      if (!this._hass) return;
+      await this._hass.callService("select", "select_option", {
+        entity_id: "select.atlascube_9140_source",
+        option: event.target.value
       });
     });
   }
