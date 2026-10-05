@@ -18,6 +18,9 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     this._cache = new Map();
     this._requestId = 0;
     this._hass = null;
+    this._deviceRegistry = null;
+    this._entityRegistry = null;
+    this._registryLoading = false;
 
     this.attachShadow({ mode: "open" });
     this._render();
@@ -25,6 +28,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
 
   set hass(hass) {
     this._hass = hass;
+    if (!this._deviceRegistry && !this._registryLoading) this._loadRegistries().then(() => this._render());
     if (this._lastState !== this._getTrack()) {
       this._lastState = this._getTrack();
       this._loadArtwork();
@@ -33,6 +37,46 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
 
   getCardSize() {
     return 6;
+  }
+
+  async _loadRegistries() {
+    if (!this._hass || this._registryLoading) return;
+    this._registryLoading = true;
+    try {
+      const [devices, entities] = await Promise.all([
+        this._hass.callWS({ type: "config/device_registry/list" }),
+        this._hass.callWS({ type: "config/entity_registry/list" })
+      ]);
+      this._deviceRegistry = devices || [];
+      this._entityRegistry = entities || [];
+    } catch (err) {
+      console.warn("AtlasCube Album Art Test: nie udało się pobrać rejestru urządzeń.", err);
+    } finally {
+      this._registryLoading = false;
+    }
+  }
+
+  _webUrl() {
+    const entityIds = [
+      this._config.entity,
+      "sensor.atlascube_radio_stacja_radiowa",
+      "sensor.atlascube_9140_playback",
+      "number.salon_atlascube_radio_glosnosc",
+      "select.atlascube_9140_source",
+      "button.atlascube_9140_previous",
+      "button.atlascube_9140_play",
+      "button.atlascube_9140_stop",
+      "button.atlascube_9140_next"
+    ];
+
+    for (const entityId of entityIds) {
+      const entity = (this._entityRegistry || []).find(item => item.entity_id === entityId);
+      if (!entity?.device_id) continue;
+      const device = (this._deviceRegistry || []).find(item => item.id === entity.device_id);
+      if (device?.configuration_url) return device.configuration_url;
+    }
+
+    return null;
   }
 
   _getTrack() {
@@ -219,6 +263,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const sourceState = this._hass?.states?.[sourceEntity];
     const sourceValue = sourceState?.state || "";
     const sourceOptions = Array.isArray(sourceState?.attributes?.options) ? sourceState.attributes.options : [];
+    const webUrl = this._webUrl();
 
     const background = artwork
       ? `
@@ -291,6 +336,8 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
         .brand { display:flex; align-items:center; justify-content:center; gap:7px; margin-bottom:5px; font-size:17px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; opacity:.9; }
         .brand-icon { font-size:20px; line-height:1; }
         .brand-cube { opacity:.58; }
+        .brand.web { cursor:pointer; }
+        .brand.web:active { transform:scale(.995); }
 
         .station {
           margin-bottom: 12px;
@@ -455,7 +502,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
         ${background}
 
         <div class="content">
-          <div class="brand"><span class="brand-icon">◈</span><span>ATLAS <span class="brand-cube">CUBE</span></span></div>
+          <div class="brand ${webUrl ? "web" : ""}" id="brand" title="${webUrl ? "Otwórz panel AtlasCube" : ""}"><span class="brand-icon">◈</span><span>ATLAS <span class="brand-cube">CUBE</span></span></div>
           ${station && station !== "unknown" && station !== "unavailable"
             ? `<div class="station">${this._escape(station)}</div>`
             : ""}
@@ -488,6 +535,10 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
         </div>
       </div>
     `;
+
+    this.shadowRoot.querySelector("#brand")?.addEventListener("click", () => {
+      if (webUrl) window.open(webUrl, "_blank", "noopener,noreferrer");
+    });
 
     this.shadowRoot.querySelector("#previous")?.addEventListener("click", () =>
       this._press("button.atlascube_9140_previous")
