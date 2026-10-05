@@ -32,7 +32,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
   }
 
   getCardSize() {
-    return 5;
+    return 6;
   }
 
   _getTrack() {
@@ -45,14 +45,10 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
 
   _parseTrack(value) {
     const text = String(value || "").trim();
-
     const match = text.match(/^(.+?)\s+-\s+(.+)$/);
 
     if (!match) {
-      return {
-        artist: "",
-        title: text
-      };
+      return { artist: "", title: text };
     }
 
     return {
@@ -73,7 +69,6 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
   _scoreResult(result, artist, title) {
     const wantedArtist = this._normalize(artist);
     const wantedTitle = this._normalize(title);
-
     const resultArtist = this._normalize(result.artistName);
     const resultTitle = this._normalize(result.trackName);
 
@@ -98,16 +93,10 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const { artist, title } = this._parseTrack(rawTrack);
     const requestId = ++this._requestId;
 
-    this._setStatus("TEST V9 — SZUKAM OKŁADKI…");
+    this._setStatus("TEST V10 — SZUKAM OKŁADKI…");
 
     if (!rawTrack || !title) {
-      this._applyResult({
-        rawTrack,
-        artist,
-        title,
-        artwork: null,
-        album: ""
-      });
+      this._applyResult({ rawTrack, artist, title, artwork: null, album: "" });
       return;
     }
 
@@ -202,8 +191,15 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
+      .replace(/\"/g, "&quot;")
       .replace(/'/g, "&#039;");
+  }
+
+  async _press(entityId) {
+    if (!this._hass || !entityId) return;
+    await this._hass.callService("button", "press", {
+      entity_id: entityId
+    });
   }
 
   _render() {
@@ -223,9 +219,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
         <img class="blur-bg-image" src="${artwork}" alt="" aria-hidden="true">
         <div class="shade"></div>
       `
-      : `
-        <div class="fallback-bg"></div>
-      `;
+      : `<div class="fallback-bg"></div>`;
 
     const image = artwork
       ? `<img class="cover" src="${artwork}" alt="Okładka">`
@@ -234,12 +228,12 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const status =
       this._status ||
       (data.error
-        ? `TEST V9 — BŁĄD: ${this._escape(data.error)}`
+        ? `TEST V10 — BŁĄD: ${this._escape(data.error)}`
         : artwork
-          ? "TEST V9 — OKŁADKA ZNALEZIONA"
+          ? "TEST V10 — OKŁADKA ZNALEZIONA"
           : data.rawTrack
-            ? "TEST V9 — BRAK OKŁADKI"
-            : "TEST V9 — CZEKAM NA UTWÓR…");
+            ? "TEST V10 — BRAK OKŁADKI"
+            : "TEST V10 — CZEKAM NA UTWÓR…");
 
     this.shadowRoot.innerHTML = `
       <style>
@@ -251,7 +245,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
         .card {
           position: relative;
           overflow: hidden;
-          min-height: 430px;
+          min-height: 500px;
           border-radius: 20px;
           border: 1px solid rgba(255,255,255,.10);
           background: transparent;
@@ -281,29 +275,18 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
 
         .shade {
           z-index: 1;
-          background:
-            linear-gradient(
-              180deg,
-              rgba(0,0,0,.18),
-              rgba(0,0,0,.58)
-            );
+          background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.58));
         }
 
         .fallback-bg {
           z-index: 0;
-          background:
-            radial-gradient(
-              circle at 50% 42%,
-              rgba(33,150,243,.18) 0%,
-              rgba(33,150,243,.06) 38%,
-              rgba(0,0,0,.18) 100%
-            );
+          background: radial-gradient(circle at 50% 42%, rgba(33,150,243,.18) 0%, rgba(33,150,243,.06) 38%, rgba(0,0,0,.18) 100%);
         }
 
         .content {
           position: relative;
           z-index: 1;
-          min-height: 394px;
+          min-height: 464px;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -320,8 +303,8 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
 
         .cover,
         .no-cover {
-          width: 220px;
-          height: 220px;
+          width: 200px;
+          height: 200px;
           border-radius: 14px;
           object-fit: cover;
           box-shadow: 0 8px 30px rgba(0,0,0,.45);
@@ -341,9 +324,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
           height: 92px;
         }
 
-        .fallback-radio.idle {
-          color: rgba(255,255,255,.55);
-        }
+        .fallback-radio.idle { color: rgba(255,255,255,.55); }
 
         .fallback-radio.rainbow {
           color: #ff0000;
@@ -359,7 +340,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
         }
 
         .artist {
-          margin-top: 18px;
+          margin-top: 16px;
           font-size: 16px;
           opacity: .78;
           text-align: center;
@@ -379,6 +360,65 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
           opacity: .68;
           text-align: center;
         }
+
+        .controls {
+          margin-top: 18px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 10px;
+        }
+
+        button {
+          font: inherit;
+          color: inherit;
+          cursor: pointer;
+          border: 1px solid rgba(255,255,255,.10);
+          outline: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .skip {
+          width: 52px;
+          height: 52px;
+          flex: 0 0 52px;
+          border-radius: 18px;
+          background: rgba(255,255,255,.06);
+          display: grid;
+          place-items: center;
+          backdrop-filter: blur(6px);
+        }
+
+        .skip ha-icon {
+          --mdc-icon-size: 25px;
+          color: rgba(255,255,255,.78);
+        }
+
+        .main {
+          width: 60px;
+          height: 60px;
+          flex: 0 0 60px;
+          border-radius: 50%;
+          background: rgba(255,255,255,.10);
+          border-color: rgba(255,255,255,.16);
+          display: grid;
+          place-items: center;
+          backdrop-filter: blur(6px);
+          box-shadow: 0 5px 18px rgba(0,0,0,.22);
+        }
+
+        .main.playing {
+          background: rgba(33,150,243,.22);
+          border-color: rgba(33,150,243,.50);
+          box-shadow: 0 0 20px rgba(33,150,243,.25);
+        }
+
+        .main ha-icon {
+          --mdc-icon-size: 29px;
+        }
+
+        .main.playing ha-icon { color: #2196f3; }
+        .main.stopped ha-icon { color: rgba(255,255,255,.92); }
 
         .status {
           margin-top: auto;
@@ -407,6 +447,21 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
           <div class="artist">${this._escape(artist || "Nieznany wykonawca")}</div>
           <div class="title">${this._escape(title)}</div>
           ${album ? `<div class="album">${this._escape(album)}</div>` : ""}
+
+          <div class="controls">
+            <button class="skip" id="previous" aria-label="Poprzednia stacja">
+              <ha-icon icon="mdi:skip-previous"></ha-icon>
+            </button>
+
+            <button class="main ${playing ? "playing" : "stopped"}" id="playstop" aria-label="${playing ? "Stop" : "Play"}">
+              <ha-icon icon="mdi:${playing ? "stop" : "play"}"></ha-icon>
+            </button>
+
+            <button class="skip" id="next" aria-label="Następna stacja">
+              <ha-icon icon="mdi:skip-next"></ha-icon>
+            </button>
+          </div>
+
           <div class="status">${status}</div>
 
           ${this._config.show_debug
@@ -415,6 +470,22 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
         </div>
       </div>
     `;
+
+    this.shadowRoot.querySelector("#previous")?.addEventListener("click", () =>
+      this._press("button.atlascube_9140_previous")
+    );
+
+    this.shadowRoot.querySelector("#next")?.addEventListener("click", () =>
+      this._press("button.atlascube_9140_next")
+    );
+
+    this.shadowRoot.querySelector("#playstop")?.addEventListener("click", () =>
+      this._press(
+        playing
+          ? "button.atlascube_9140_stop"
+          : "button.atlascube_9140_play"
+      )
+    );
   }
 }
 
