@@ -213,6 +213,9 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const album = data.album || "";
     const playback = this._hass?.states?.["sensor.atlascube_9140_playback"]?.state || "";
     const playing = playback === "playing";
+    const volumeState = this._hass?.states?.["number.salon_atlascube_radio_glosnosc"]?.state;
+    const volume = Number(volumeState);
+    const volumeValue = Number.isFinite(volume) ? Math.max(0, Math.min(100, volume)) : 0;
 
     const background = artwork
       ? `
@@ -420,6 +423,32 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
         .main.playing ha-icon { color: #2196f3; }
         .main.stopped ha-icon { color: rgba(255,255,255,.92); }
 
+        .volume {
+          width: min(360px, 90%);
+          margin-top: 14px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .volume ha-icon {
+          --mdc-icon-size: 22px;
+          opacity: .75;
+        }
+
+        .volume input {
+          flex: 1;
+          min-width: 0;
+          accent-color: #2196f3;
+        }
+
+        .volume-value {
+          min-width: 38px;
+          text-align: right;
+          font-size: 12px;
+          opacity: .65;
+        }
+
         .status {
           margin-top: auto;
           padding-top: 14px;
@@ -462,6 +491,12 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
             </button>
           </div>
 
+          <div class="volume">
+            <ha-icon icon="mdi:${volumeValue === 0 ? "volume-mute" : volumeValue < 50 ? "volume-medium" : "volume-high"}"></ha-icon>
+            <input id="volume" type="range" min="0" max="100" step="1" value="${volumeValue}" aria-label="Głośność">
+            <div class="volume-value">${Math.round(volumeValue)}%</div>
+          </div>
+
           <div class="status">${status}</div>
 
           ${this._config.show_debug
@@ -486,6 +521,20 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
           : "button.atlascube_9140_play"
       )
     );
+
+    this.shadowRoot.querySelector("#volume")?.addEventListener("input", event => {
+      const value = Number(event.target.value);
+      const label = this.shadowRoot.querySelector(".volume-value");
+      if (label) label.textContent = `${Math.round(value)}%`;
+    });
+
+    this.shadowRoot.querySelector("#volume")?.addEventListener("change", async event => {
+      if (!this._hass) return;
+      await this._hass.callService("number", "set_value", {
+        entity_id: "number.salon_atlascube_radio_glosnosc",
+        value: Number(event.target.value)
+      });
+    });
   }
 }
 
