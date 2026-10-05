@@ -137,7 +137,6 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const { artist, title } = this._parseTrack(rawTrack);
     const requestId = ++this._requestId;
 
-
     if (!rawTrack || !title) {
       this._applyResult({ rawTrack, artist, title, artwork: null, album: "" });
       return;
@@ -308,7 +307,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
           display: block;
           object-fit: cover;
           object-position: center;
-          filter: blur(24px);
+          filter: blur(18px);
           transform: scale(1.0);
           opacity: .82;
           z-index: 0;
