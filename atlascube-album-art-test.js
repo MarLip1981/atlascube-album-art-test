@@ -12,13 +12,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
 
     this._config = {
       entity: config.entity,
-      show_debug: config.show_debug === true,
-      radio: {
-        previous: "button.atlascube_9140_previous",
-        play: "button.atlascube_9140_play",
-        stop: "button.atlascube_9140_stop",
-        next: "button.atlascube_9140_next"
-      }
+      show_debug: config.show_debug === true
     };
 
     this._cache = new Map();
@@ -104,7 +98,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const { artist, title } = this._parseTrack(rawTrack);
     const requestId = ++this._requestId;
 
-    this._setStatus("TEST V10 — SZUKAM OKŁADKI…");
+    this._setStatus("TEST V9 — SZUKAM OKŁADKI…");
 
     if (!rawTrack || !title) {
       this._applyResult({
@@ -198,11 +192,9 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     this._render();
   }
 
-  async _press(entityId) {
-    if (!this._hass || !entityId) return;
-    await this._hass.callService("button", "press", {
-      entity_id: entityId
-    });
+  _setStatus(status) {
+    this._status = status;
+    this._render();
   }
 
   _escape(value) {
@@ -242,12 +234,12 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
     const status =
       this._status ||
       (data.error
-        ? `TEST V10 — BŁĄD: ${this._escape(data.error)}`
+        ? `TEST V9 — BŁĄD: ${this._escape(data.error)}`
         : artwork
-          ? "TEST V10 — OKŁADKA ZNALEZIONA"
+          ? "TEST V9 — OKŁADKA ZNALEZIONA"
           : data.rawTrack
-            ? "TEST V10 — BRAK OKŁADKI"
-            : "TEST V10 — CZEKAM NA UTWÓR…");
+            ? "TEST V9 — BRAK OKŁADKI"
+            : "TEST V9 — CZEKAM NA UTWÓR…");
 
     this.shadowRoot.innerHTML = `
       <style>
@@ -328,8 +320,8 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
 
         .cover,
         .no-cover {
-          width: 200px;
-          height: 200px;
+          width: 220px;
+          height: 220px;
           border-radius: 14px;
           object-fit: cover;
           box-shadow: 0 8px 30px rgba(0,0,0,.45);
@@ -388,72 +380,12 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
           text-align: center;
         }
 
-        .controls {
-          margin-top: 16px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          gap: 10px;
-        }
-
-        button {
-          font: inherit;
-          color: inherit;
-          cursor: pointer;
-          border: 1px solid rgba(255,255,255,.10);
-          outline: none;
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        .skip {
-          width: 52px;
-          height: 52px;
-          flex: 0 0 52px;
-          border-radius: 18px;
-          background: rgba(255,255,255,.06);
-          display: grid;
-          place-items: center;
-          backdrop-filter: blur(6px);
-        }
-
-        .skip ha-icon {
-          --mdc-icon-size: 25px;
-          color: rgba(255,255,255,.78);
-        }
-
-        .main {
-          width: 60px;
-          height: 60px;
-          flex: 0 0 60px;
-          border-radius: 50%;
-          background: rgba(255,255,255,.10);
-          border-color: rgba(255,255,255,.16);
-          display: grid;
-          place-items: center;
-          backdrop-filter: blur(6px);
-          box-shadow: 0 5px 18px rgba(0,0,0,.22);
-        }
-
-        .main.playing {
-          background: rgba(33,150,243,.22);
-          border-color: rgba(33,150,243,.50);
-          box-shadow: 0 0 20px rgba(33,150,243,.25);
-        }
-
-        .main ha-icon {
-          --mdc-icon-size: 29px;
-        }
-
-        .main.playing ha-icon {
-          color: #2196f3;
-        }
-
-        .main.stopped ha-icon {
-          color: rgba(255,255,255,.92);
-        }
-
         .status {
-          display: none;
+          margin-top: auto;
+          padding-top: 14px;
+          font-size: 11px;
+          opacity: .55;
+          text-align: center;
         }
 
         .debug {
@@ -475,20 +407,7 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
           <div class="artist">${this._escape(artist || "Nieznany wykonawca")}</div>
           <div class="title">${this._escape(title)}</div>
           ${album ? `<div class="album">${this._escape(album)}</div>` : ""}
-
-          <div class="controls">
-            <button class="skip" id="previous" aria-label="Poprzednia stacja">
-              <ha-icon icon="mdi:skip-previous"></ha-icon>
-            </button>
-
-            <button class="main ${playing ? "playing" : "stopped"}" id="playstop" aria-label="${playing ? "Stop" : "Play"}">
-              <ha-icon icon="mdi:${playing ? "stop" : "play"}"></ha-icon>
-            </button>
-
-            <button class="skip" id="next" aria-label="Następna stacja">
-              <ha-icon icon="mdi:skip-next"></ha-icon>
-            </button>
-          </div>
+          <div class="status">${status}</div>
 
           ${this._config.show_debug
             ? `<div class="debug">Źródło: iTunes Search API</div>`
@@ -496,22 +415,6 @@ class AtlasCubeAlbumArtTest extends HTMLElement {
         </div>
       </div>
     `;
-
-    this.shadowRoot.querySelector("#previous")?.addEventListener("click", () =>
-      this._press(this._config.radio.previous)
-    );
-
-    this.shadowRoot.querySelector("#next")?.addEventListener("click", () =>
-      this._press(this._config.radio.next)
-    );
-
-    this.shadowRoot.querySelector("#playstop")?.addEventListener("click", () =>
-      this._press(
-        playing
-          ? this._config.radio.stop
-          : this._config.radio.play
-      )
-    );
   }
 }
 
